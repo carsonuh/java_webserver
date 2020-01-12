@@ -1,6 +1,8 @@
 language: java
 dist: bionic
 before_install:
+- openssl aes-256-cbc -K $encrypted_9bfe394b56c1_key -iv $encrypted_9bfe394b56c1_iv
+  -in secretTests.tar.enc -out secretTests.tar -d
 - tar -xf secretTests.tar
 script: make build && make test
 notifications:
