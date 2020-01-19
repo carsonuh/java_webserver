@@ -1,17 +1,21 @@
 /////////////////////////////////////////////////////////////
 //
-// Put your information here
+// Carson Uecker-Herman
 //
 /////////////////////////////////////////////////////////////
 import java.net.*;
 import java.io.*;
 import java.util.*;
-
+import java.nio.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 // This is mostly a copy of the sample code.  Use what you want, delete the rest.
 // Note: This code is not well organized. It should be broken into smaller methods.
 
 public class MyStaticWebServer {
-
+	
+	private static File f;
+	private static FileInputStream fis;
     // You can use this to map extensions to MIME types.  Feel free to add other mappings as desired.
     private static final HashMap<String, String> extensions = new HashMap<String, String>();
     static {
@@ -47,7 +51,57 @@ public class MyStaticWebServer {
     out.println("");
     out.println(toPrint);
   }
+  
+  public static void send400(PrintStream out, String toPrint) {
+	    out.println("HTTP/1.1 404 Not Found");
+	    out.println("Content-Type: text/html");
+	    out.println("Content-Length: " + toPrint.length());
+	    out.println("Connection: close");
+	    out.println("");
+	    out.println(toPrint);
+	  }
+  
+  public static void dirList(PrintStream out, String toPrint ) {
+	  	out.println("HTTP/1.1 200 OK");
+	    out.println("Content-Type: text/html");
+	    out.println("Content-Length: " + toPrint.length());
+	    out.println("Connection: keep-alive");
+	    out.println("");
+	    out.println(toPrint);
+  }
+  
+  /*
+  public static void send200(File file) {
+	  
 
+      try {
+        fis = new FileInputStream(file);
+      } catch (Exception e) {
+        String toPrint = "<html><body>Problem opening/reading \"" + file.getName() + "\"</body></html>";
+        send404(out, toPrint);
+        socket.close();
+        break;
+      }
+      
+      // Respond
+      out.println("HTTP/1.1 200 OK");
+      out.println(getExtension(file.toString()));
+      out.println("Content-Length: " + file.length());
+      out.println("Connection: close");
+      out.println("");
+
+      // read data from the file and send it to the client.
+      byte[] buffer = new byte[8192];
+      int read = fis.read(buffer);
+      while (read != -1) {
+        out.write(buffer, 0, read);
+        read = fis.read(buffer);
+      }
+      fis.close();
+	  
+  }
+
+*/
   public static void main(String[] args) throws IOException {
 
     // Create a socket that listens on port 8534.
@@ -87,24 +141,108 @@ public class MyStaticWebServer {
 
       String filename = parts[1];
 
+      System.out.println("Filename: " + filename);
       // If the path begins with "/", remove the "/".
       if (filename.startsWith("/")) {
         filename = filename.substring(1);
       }
 
-      File f = new File(filename);
+      f = new File(filename);
 
+      System.out.println("File: " + f.getName());
       // send 404 if file doesn't exist, or is not readable.
-      if (!f.exists() || !f.canRead() || !f.isFile()) {
+     
+      if (!f.exists()) {
         System.out.println(filename + " not found.  Returning 404.");
         String toPrint = "<html><body>Problem finding/reading \"" + filename + "\"</body></html>";
         send404(out, toPrint);
         socket.close();
         continue;
       }
+      
+      if (f.isDirectory()){
+    	  System.out.println(f.getName() + " is a directory");
+ 
+    	  
+          File temp = new File(f.getName()+"/index.html");
+          System.out.println("index location: " + temp.getCanonicalPath());
+          System.out.print("Searching for index.....");
+          if(temp.exists()){
+          //	f = temp;
 
-      FileInputStream fis;
+        	  
+            try {
+              fis = new FileInputStream(temp);
+            } catch (Exception e) {
+              String toPrint = "<html><body>Problem opening/reading \"" + filename + "\"</body></html>";
+              send404(out, toPrint);
+              socket.close();
+              break;
+            }
+            
+            // Respond
+            out.println("HTTP/1.1 200 OK");
+            out.println(getExtension(temp.toString()));
+            out.println("Content-Length: " + temp.length());
+            out.println("Connection: close");
+            out.println("");
 
+            // read data from the file and send it to the client.
+            byte[] buffer = new byte[8192];
+            int read = fis.read(buffer);
+            while (read != -1) {
+              out.write(buffer, 0, read);
+              read = fis.read(buffer);
+            }
+            fis.close();
+            
+        	 
+        	//send200(temp);
+          	System.out.print("found");
+          	socket.close();
+          	continue;
+          }
+          // create list of files in directory
+          else {
+        	  System.out.print("not found");
+        	  System.out.println("\nShow file list....");
+            	
+        	//  File[] filesList = f.listFiles();
+        	  String toPrint = "<html><body><h1>Contents of " + f.getName() + "/</h1>";
+        	  for (File file : f.listFiles()) {
+        	
+        		if(file.isDirectory()) {
+        			toPrint += "<a style='display:block;' href=" + file.getName()+ "/>"+file.getName()+"</a>";
+        		}
+        		else {
+        			toPrint += "<a style='display:block;' href=" + file.getName()+ ">"+file.getName()+"</a>";
+        		}
+        	  }
+        	  toPrint += "</body></html>";
+    
+        	dirList(out, toPrint);
+          	socket.close();
+          	continue;
+          	
+          }
+      }
+      
+      if(command == null) {
+    	  continue;
+      }
+      
+      if(!parts[0].contains("GET")) {
+    	  System.out.println(">"+parts[0]+"<");
+    	  System.out.println(command + " is not recognized. Returning 400.");
+    	  String toPrint = "<html><body>" + command + " is not recognized. </body></html>";
+    	  send400(out, toPrint);
+    	  socket.close();
+    	  continue;
+      }
+
+      
+
+      
       try {
         fis = new FileInputStream(f);
       } catch (Exception e) {
@@ -114,9 +252,12 @@ public class MyStaticWebServer {
         break;
       }
 
+
+        
+
       // Respond
       out.println("HTTP/1.1 200 OK");
-      out.println("Content-Type: text/html");
+      out.println(getExtension(f.toString()));
       out.println("Content-Length: " + f.length());
       out.println("Connection: close");
       out.println("");
@@ -129,6 +270,10 @@ public class MyStaticWebServer {
         read = fis.read(buffer);
       }
       fis.close();
+      
+      
+      
+//      send200(f);
 
       socket.close();
 
