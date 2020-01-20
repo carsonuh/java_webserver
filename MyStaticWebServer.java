@@ -16,6 +16,7 @@ public class MyStaticWebServer {
 	
 	private static File f;
 	private static FileInputStream fis;
+	//private static Socket socket;
     // You can use this to map extensions to MIME types.  Feel free to add other mappings as desired.
     private static final HashMap<String, String> extensions = new HashMap<String, String>();
     static {
@@ -39,6 +40,7 @@ public class MyStaticWebServer {
                 type = extensions.get(extension);
             }
         }
+        System.out.println("Extension:" + type);
         return type;
     }
 
@@ -70,9 +72,10 @@ public class MyStaticWebServer {
 	    out.println(toPrint);
   }
   
-  /*
-  public static void send200(File file) {
+  
+  public static void send200(PrintStream out, File file) {
 	  
+	  /*
 
       try {
         fis = new FileInputStream(file);
@@ -80,7 +83,7 @@ public class MyStaticWebServer {
         String toPrint = "<html><body>Problem opening/reading \"" + file.getName() + "\"</body></html>";
         send404(out, toPrint);
         socket.close();
-        break;
+        //break;
       }
       
       // Respond
@@ -98,10 +101,10 @@ public class MyStaticWebServer {
         read = fis.read(buffer);
       }
       fis.close();
-	  
+	*/  
   }
 
-*/
+
   public static void main(String[] args) throws IOException {
 
     // Create a socket that listens on port 8534.
@@ -135,6 +138,11 @@ public class MyStaticWebServer {
         headerLine = input.readLine();
       }
 
+      
+      if(command == null) {
+    	  continue;
+      }
+      
       // split the command by spaces.
       String[] parts = command.split("\\s+");
       System.out.printf("Command; %s; path %s; protocol %s\n", parts[0], parts[1], parts[2]);
@@ -152,7 +160,7 @@ public class MyStaticWebServer {
       System.out.println("File: " + f.getName());
       // send 404 if file doesn't exist, or is not readable.
      
-      if (!f.exists()) {
+      if (!f.exists() || !f.canRead()) {
         System.out.println(filename + " not found.  Returning 404.");
         String toPrint = "<html><body>Problem finding/reading \"" + filename + "\"</body></html>";
         send404(out, toPrint);
@@ -167,9 +175,10 @@ public class MyStaticWebServer {
           File temp = new File(f.getName()+"/index.html");
           System.out.println("index location: " + temp.getCanonicalPath());
           System.out.print("Searching for index.....");
-          if(temp.exists()){
+          if(temp.exists() && temp.canRead() && temp.isFile()){
           //	f = temp;
 
+        	
         	  
             try {
               fis = new FileInputStream(temp);
@@ -196,8 +205,8 @@ public class MyStaticWebServer {
             }
             fis.close();
             
-        	 
-        	//send200(temp);
+        	
+        	//send200(out, temp);
           	System.out.print("found");
           	socket.close();
           	continue;
@@ -226,10 +235,7 @@ public class MyStaticWebServer {
           	
           }
       }
-      
-      if(command == null) {
-    	  continue;
-      }
+     
       
       if(!parts[0].contains("GET")) {
     	  System.out.println(">"+parts[0]+"<");
@@ -273,7 +279,7 @@ public class MyStaticWebServer {
       
       
       
-//      send200(f);
+      //send200(out, f);
 
       socket.close();
 

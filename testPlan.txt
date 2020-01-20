@@ -17,4 +17,8 @@ display the list of files to the user.
 
 6. If a file cannot be read then return 404.
 
-7.TESTING TRAVIS....................
+7.TESTING TRAVIS...................got it to work
+
+8. Implemented checks for the index.html to test if it is not a directory and that the file is readable.
+
+9. If requested command comes back as null then continue so program does not crash.
