@@ -43,6 +43,16 @@ public class MyStaticWebServer {
         System.out.println("Extension:" + type);
         return type;
     }
+    
+    public static boolean isValidExtension(String filename) {
+    	int i = filename.lastIndexOf('.');
+        if (i > 0) {
+            String extension = filename.substring(i + 1);
+            return extensions.containsKey(extension);
+        }
+        
+        return true;
+    }
 
 
   public static void send404(PrintStream out, String toPrint) {
@@ -140,6 +150,7 @@ public class MyStaticWebServer {
 
       
       if(command == null) {
+    	  out.flush();
     	  continue;
       }
       
@@ -221,7 +232,8 @@ public class MyStaticWebServer {
         	  for (File file : f.listFiles()) {
         	
         		if(file.isDirectory()) {
-        			toPrint += "<a style='display:block;' href=" + file.getName()+ "/>"+file.getName()+"</a>";
+        		
+        			toPrint += "<a style='display:block;' href=" + file.getName()+ "/>"+file.getName()+"/</a>";
         		}
         		else {
         			toPrint += "<a style='display:block;' href=" + file.getName()+ ">"+file.getName()+"</a>";
@@ -237,7 +249,7 @@ public class MyStaticWebServer {
       }
      
       
-      if(!parts[0].contains("GET")) {
+      if(!parts[0].contains("GET") || !isValidExtension(f.toString())) {
     	  System.out.println(">"+parts[0]+"<");
     	  System.out.println(command + " is not recognized. Returning 400.");
     	  String toPrint = "<html><body>" + command + " is not recognized. </body></html>";

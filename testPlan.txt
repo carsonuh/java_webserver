@@ -13,12 +13,14 @@ display the list of files to the user.
 
 4. If a bad command is sent (anything other than GET) then return a 400 status.
 
-5. Verify that the server can handle the allowed file formats.
+5. Verify that the server can handle the allowed file formats (jpeg, gif, pdf, png).
 
 6. If a file cannot be read then return 404.
 
 7.TESTING TRAVIS...................got it to work
 
-8. Implemented checks for the index.html to test if it is not a directory and that the file is readable.
+8. Check that index.html is not a directory and that it can be read.
 
-9. If requested command comes back as null then continue so program does not crash.
+9. If requested command comes back as null then continue so program does not crash and flush the printstream.
+
+10. Return 400 if file type is not part of the accepted file types.
