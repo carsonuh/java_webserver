@@ -171,7 +171,7 @@ public class MyStaticWebServer {
       System.out.println("File: " + f.getName());
       // send 404 if file doesn't exist, or is not readable.
      
-      if (!f.exists() || !f.canRead()) {
+      if (!f.exists()) {
         System.out.println(filename + " not found.  Returning 404.");
         String toPrint = "<html><body>Problem finding/reading \"" + filename + "\"</body></html>";
         send404(out, toPrint);
@@ -179,20 +179,9 @@ public class MyStaticWebServer {
         continue;
       }
       
-      if (f.isDirectory()){
-    	  System.out.println(f.getName() + " is a directory");
- 
-    	  
-          File temp = new File(f.getName()+"/index.html");
-          System.out.println("index location: " + temp.getCanonicalPath());
-          System.out.print("Searching for index.....");
-          if(temp.exists() && temp.canRead() && temp.isFile()){
-          //	f = temp;
-
-        	
-        	  
-            try {
-              fis = new FileInputStream(temp);
+      if(!isValidExtension(f.toString())) {
+    	  try {
+              fis = new FileInputStream(f);
             } catch (Exception e) {
               String toPrint = "<html><body>Problem opening/reading \"" + filename + "\"</body></html>";
               send404(out, toPrint);
@@ -202,8 +191,8 @@ public class MyStaticWebServer {
             
             // Respond
             out.println("HTTP/1.1 200 OK");
-            out.println(getExtension(temp.toString()));
-            out.println("Content-Length: " + temp.length());
+            out.println("Content-Type: text/html");
+            out.println("Content-Length: " + f.length());
             out.println("Connection: close");
             out.println("");
 
@@ -217,10 +206,76 @@ public class MyStaticWebServer {
             fis.close();
             
         	
-        	//send200(out, temp);
+        	//send200(out, dirIndex);
           	System.out.print("found");
           	socket.close();
           	continue;
+          
+      }
+      
+      if (f.isDirectory()){
+    	  System.out.println(f.getName() + " is a directory");
+ 
+    	  
+          File dirIndex = new File(f.getName()+"/index.html");
+          System.out.println("index location: " + dirIndex.getCanonicalPath());
+          System.out.print("Searching for index.....");
+          if(dirIndex.exists() && dirIndex.canRead() && dirIndex.isFile()){
+          //	f = dirIndex;
+
+        	
+        	  
+            try {
+              fis = new FileInputStream(dirIndex);
+            } catch (Exception e) {
+              String toPrint = "<html><body>Problem opening/reading \"" + filename + "\"</body></html>";
+              send404(out, toPrint);
+              socket.close();
+              break;
+            }
+            
+            // Respond
+            out.println("HTTP/1.1 200 OK");
+            out.println("Content-Type: " + getExtension(dirIndex.toString()));
+            out.println("Content-Length: " + dirIndex.length());
+            out.println("Connection: close");
+            out.println("");
+
+            // read data from the file and send it to the client.
+            byte[] buffer = new byte[8192];
+            int read = fis.read(buffer);
+            while (read != -1) {
+              out.write(buffer, 0, read);
+              read = fis.read(buffer);
+            }
+            fis.close();
+            
+        	
+        	//send200(out, dirIndex);
+          	System.out.print("found");
+          	socket.close();
+          	continue;
+          }
+          
+          else if(dirIndex.exists() && !dirIndex.canRead() ) {
+        	  
+        	  String toPrint = "<html><body><h1>Contents of " + f.getName() + "/</h1>";
+        	  for (File file : f.listFiles()) {
+        	
+        		if(file.isDirectory()) {
+        		
+        			toPrint += "<a style='display:block;' href=" + file.getName()+ "/>"+file.getName()+"/</a>";
+        		}
+        		else {
+        			toPrint += "<a style='display:block;' href=" + file.getName()+ ">"+file.getName()+"</a>";
+        		}
+        	  }
+        	  toPrint += "</body></html>";
+    
+        	dirList(out, toPrint);
+          	socket.close();
+          	continue;
+        	  
           }
           // create list of files in directory
           else {
