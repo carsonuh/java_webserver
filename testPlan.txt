@@ -30,3 +30,5 @@ display the list of files to the user.
 12. Unknown extension should use text/html (studentData/no_ext)
 
 13. If index.html is not readable then display directory list (studentData/ExtraCredit/index.html/) 
+
+14. Unknown data types should have Content-Type: text/plain not text/html

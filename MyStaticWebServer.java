@@ -191,7 +191,7 @@ public class MyStaticWebServer {
             
             // Respond
             out.println("HTTP/1.1 200 OK");
-            out.println("Content-Type: text/html");
+            out.println("Content-Type: text/plain");
             out.println("Content-Length: " + f.length());
             out.println("Connection: close");
             out.println("");
