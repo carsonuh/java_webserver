@@ -82,7 +82,8 @@ public class MyStaticWebServer {
 	    out.println(toPrint);
   }
   
-  
+
+    // zk Please remove dead code from final submissions.  
   public static void send200(PrintStream out, File file) {
 	  
 	  /*

@@ -8,13 +8,17 @@
 
 2. Verify that 404 returned if file not found (ExtraCredit/chad02.html)
 
+
+# zk:  This is two test cases.  Separate them and list the specific URLs you will use for each.
 3. If directory has an index.html in successfully fetch it. If it does not contain an index.html file then 
 display the list of files to the user.
 
 4. If a bad command is sent (anything other than GET) then return a 400 status.
 
+# zk: This is three test cases.  Separate and list the speific URLs.
 5. Verify that the server can handle the allowed file formats (jpeg, gif, pdf, png).
 
+# zk:  Give a specific URL
 6. If a file cannot be read then return 404.
 
 7.TESTING TRAVIS...................got it to work
